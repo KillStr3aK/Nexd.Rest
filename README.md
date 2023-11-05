@@ -22,7 +22,7 @@ using Nexd.Rest;
 // random user class that I may send, or get in a result of a `HttpRequest`
 class User : IJsonObject // If you have classes that you want to use as return values from a `HttpRequest` (or want to use in a `HttpMethod.Post` request, they should implement this interface)
 {
-    [JsonProperty("id)]
+    [JsonProperty("id")]
     public int ID;
 
     [JsonProperty("username")]
