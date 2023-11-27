@@ -1,8 +1,7 @@
 ﻿namespace Nexd.Rest
 {
     using System.Net;
-
-    using Newtonsoft.Json;
+    using System.Text.Json;
 
     public class HttpRequest : IDisposable
     {
@@ -42,9 +41,8 @@
 
                 if (response.IsSuccessStatusCode)
                 {
-                    result = JsonConvert.DeserializeObject<T>(responseString);
-                }
-                else
+                    result = JsonSerializer.Deserialize<T>(responseString);
+                } else
                 {
                     this.WrongStatusCode(response.StatusCode, responseString);
                 }
@@ -66,9 +64,8 @@
 
                 if (response.IsSuccessStatusCode)
                 {
-                    result = JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
-                }
-                else
+                    result = await JsonSerializer.DeserializeAsync<T>(await response.Content.ReadAsStreamAsync());
+                } else
                 {
                     this.WrongStatusCode(response.StatusCode, await response.Content.ReadAsStringAsync());
                 }
@@ -148,13 +145,11 @@
                 case HttpStatusCode.Unauthorized:
                     {
                         Console.WriteLine($"REST API: '{this.Url}' => {statusCode}");
-                    }
-                    break;
+                    } break;
                 default:
                     {
                         Console.WriteLine($"REST API: '{this.Url} => {statusCode}\nResponse Body:{responseBody}");
-                    }
-                    break;
+                    } break;
             }
         }
 

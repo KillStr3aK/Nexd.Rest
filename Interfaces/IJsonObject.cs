@@ -1,12 +1,12 @@
 ﻿namespace Nexd.Rest
 {
-    using Newtonsoft.Json;
+    using System.Text.Json;
 
     public interface IJsonObject
     {
-        public string ToJSON(Formatting formatting = Formatting.None)
+        public string ToJSON(JsonSerializerOptions? options = null)
         {
-            return JsonConvert.SerializeObject(this, formatting);
+            return JsonSerializer.Serialize(this, options);
         }
     }
 }

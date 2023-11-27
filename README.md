@@ -3,10 +3,10 @@
 # Installation
 
 Available on [NuGet](https://www.nuget.org/packages/Nexd.Rest/)
-[![NuGet version (Nexd.Reflection)](https://img.shields.io/nuget/v/Nexd.Rest.svg?style=flat-square)](https://www.nuget.org/packages/Nexd.Rest/)
+[![NuGet version (Nexd.Rest)](https://img.shields.io/nuget/v/Nexd.Rest.svg?style=flat-square)](https://www.nuget.org/packages/Nexd.Rest/)
 
 ```
-dotnet add package Nexd.Rest --version 1.0.0
+dotnet add package Nexd.Rest --version 1.0.1
 ```
 
 ### Note
@@ -22,10 +22,10 @@ using Nexd.Rest;
 // random user class that I may send, or get in a result of a `HttpRequest`
 class User : IJsonObject // If you have classes that you want to use as return values from a `HttpRequest` (or want to use in a `HttpMethod.Post` request, they should implement this interface)
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public int ID;
 
-    [JsonProperty("username")]
+    [JsonPropertyName("username")]
     public string Username;
 }
 ```
@@ -36,7 +36,7 @@ class User : IJsonObject // If you have classes that you want to use as return v
 HttpAPI api = new HttpAPI("http://api.myserver.domain"); // Note: no slash at the end
 
 User? user = api.SendRequest<User>("/user/get/id/1"); // random route, it depends on your API
-Console.WriteLine($"{(user as IJsonObject).ToJSON()}"); // IJsonObject implements default ToJSON method which is a wrapper around Newtonsoft.Json serialization method
+Console.WriteLine($"{(user as IJsonObject).ToJSON()}"); // IJsonObject implements default ToJSON method which is a wrapper around `System.Text.Json` serialization method
 
 // you can also make your api wrapper using inheritance like this:
 class MyAPI : HttpAPI
