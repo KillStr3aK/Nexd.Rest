@@ -33,25 +33,28 @@
 
             using (HttpResponseMessage response = client.Send(message))
             {
-                T? result = default(T);
-
-                Stream responseStream = response.Content.ReadAsStream();
-                StreamReader streamReader = new StreamReader(responseStream);
-                string responseString = streamReader.ReadToEnd();
-
-                if (response.IsSuccessStatusCode)
+                using (StreamReader reader = new StreamReader(response.Content.ReadAsStream()))
                 {
-                    result = JsonSerializer.Deserialize<T>(responseString);
-                } else
-                {
-                    this.WrongStatusCode(response.StatusCode, responseString);
+                    response.EnsureSuccessStatusCode();
+                    return JsonSerializer.Deserialize<T>(reader.ReadToEnd());
                 }
-
-                return result;
             }
         }
 
-        private async Task<T?> SendInternalAsync<T>(HttpClient client, HttpRequestMessage message, IHttpContent? body) where T: IJsonObject
+        private void SendInternalNoResult(HttpClient client, HttpRequestMessage message, IHttpContent? body)
+        {
+            if (body != null)
+            {
+                message.Content = body.GetContent();
+            }
+
+            using (HttpResponseMessage response = client.Send(message))
+            {
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        private async Task<T?> SendInternalAsync<T>(HttpClient client, HttpRequestMessage message, IHttpContent? body) where T : IJsonObject
         {
             if (body != null)
             {
@@ -60,17 +63,21 @@
 
             using (HttpResponseMessage response = await client.SendAsync(message))
             {
-                T? result = default(T);
+                response.EnsureSuccessStatusCode();
+                return await JsonSerializer.DeserializeAsync<T>(await response.Content.ReadAsStreamAsync());
+            }
+        }
 
-                if (response.IsSuccessStatusCode)
-                {
-                    result = await JsonSerializer.DeserializeAsync<T>(await response.Content.ReadAsStreamAsync());
-                } else
-                {
-                    this.WrongStatusCode(response.StatusCode, await response.Content.ReadAsStringAsync());
-                }
+        private async Task SendInternalNoResultAsync(HttpClient client, HttpRequestMessage message, IHttpContent? body)
+        {
+            if (body != null)
+            {
+                message.Content = body.GetContent();
+            }
 
-                return result;
+            using (HttpResponseMessage response = await client.SendAsync(message))
+            {
+                response.EnsureSuccessStatusCode();
             }
         }
 
@@ -102,7 +109,39 @@
         {
             using (HttpClient client = new HttpClient())
             {
-                return await this.SendAsync<T>(client, null);
+                return await this.SendAsync<T>(client);
+            }
+        }
+
+        public async Task SendNoResultAsync(HttpClient client, IHttpContent? body)
+        {
+            using (HttpRequestMessage message = new HttpRequestMessage(this.Method, this.Url))
+            {
+                await this.SendInternalNoResultAsync(client, message, body);
+            }
+        }
+
+        public async Task SendNoResultAsync(HttpClient client)
+        {
+            using (HttpRequestMessage message = new HttpRequestMessage(this.Method, this.Url))
+            {
+                await this.SendInternalNoResultAsync(client, message, null);
+            }
+        }
+
+        public async Task SendNoResultAsync(IHttpContent? body)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                await this.SendNoResultAsync(client, body);
+            }
+        }
+
+        public async Task SendNoResultAsync()
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                await this.SendNoResultAsync(client);
             }
         }
 
@@ -138,18 +177,35 @@
             }
         }
 
-        private void WrongStatusCode(HttpStatusCode statusCode, string responseBody)
+        public void SendNoResult(HttpClient client, IHttpContent? body)
         {
-            switch (statusCode)
+            using (HttpRequestMessage message = new HttpRequestMessage(this.Method, this.Url))
             {
-                case HttpStatusCode.Unauthorized:
-                    {
-                        Console.WriteLine($"REST API: '{this.Url}' => {statusCode}");
-                    } break;
-                default:
-                    {
-                        Console.WriteLine($"REST API: '{this.Url} => {statusCode}\nResponse Body:{responseBody}");
-                    } break;
+                this.SendInternalNoResult(client, message, body);
+            }
+        }
+
+        public void SendNoResult(HttpClient client)
+        {
+            using (HttpRequestMessage message = new HttpRequestMessage(this.Method, this.Url))
+            {
+                this.SendInternalNoResult(client, message, null);
+            }
+        }
+
+        public void SendNoResult(IHttpContent? body)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                this.SendNoResult(client, body);
+            }
+        }
+
+        public void SendNoResult()
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                this.SendNoResult(client, null);
             }
         }
 
