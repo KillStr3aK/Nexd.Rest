@@ -6,7 +6,7 @@ Available on [NuGet](https://www.nuget.org/packages/Nexd.Rest/)
 [![NuGet version (Nexd.Rest)](https://img.shields.io/nuget/v/Nexd.Rest.svg?style=flat-square)](https://www.nuget.org/packages/Nexd.Rest/)
 
 ```
-dotnet add package Nexd.Rest --version 1.0.1
+dotnet add package Nexd.Rest --version 1.0.2
 ```
 
 ### Note
